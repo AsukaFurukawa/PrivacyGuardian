@@ -1,0 +1,6 @@
+Note: This is a placeholder for the icon.png file.
+ 
+To generate the actual PNG:
+1. Use the client/assets/logo.svg file
+2. Convert it to a 512x512 PNG using any SVG to PNG converter
+3. Replace this file with the generated PNG 

@@ -1,0 +1,35 @@
+{
+  "name": "whisperprint-privacy-guardian-client",
+  "version": "0.1.0",
+  "description": "Desktop client for WhisperPrint + Privacy-Guardian",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder"
+  },
+  "author": "Hackathon Team",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "electron-store": "^8.1.0",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "electron": "^24.3.0",
+    "electron-builder": "^23.6.0"
+  },
+  "build": {
+    "appId": "com.hackathon.whisperprint",
+    "productName": "WhisperPrint + Privacy-Guardian",
+    "mac": {
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+} 

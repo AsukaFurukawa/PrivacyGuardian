@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3498db;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2ecc71;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="white" stroke="#e0e0e0" stroke-width="2" />
+  
+  <!-- Shield Base -->
+  <path d="M256 96c-88 0-160 32-160 32v128c0 70.7 57.3 128 128 128h64c70.7 0 128-57.3 128-128V128s-72-32-160-32z" fill="url(#grad1)" filter="url(#shadow)" />
+  
+  <!-- Document -->
+  <rect x="176" y="176" width="160" height="200" rx="8" ry="8" fill="white" stroke="#2c3e50" stroke-width="4" />
+  
+  <!-- Document Lines -->
+  <line x1="200" y1="220" x2="312" y2="220" stroke="#2c3e50" stroke-width="4" stroke-linecap="round" />
+  <line x1="200" y1="250" x2="312" y2="250" stroke="#2c3e50" stroke-width="4" stroke-linecap="round" />
+  <line x1="200" y1="280" x2="312" y2="280" stroke="#2c3e50" stroke-width="4" stroke-linecap="round" />
+  <line x1="200" y1="310" x2="260" y2="310" stroke="#2c3e50" stroke-width="4" stroke-linecap="round" />
+  
+  <!-- Fingerprint Symbol -->
+  <g transform="translate(256, 256) scale(0.4) translate(-256, -256)">
+    <path d="M256 96c-88 0-160 72-160 160 0 88 72 160 160 160s160-72 160-160c0-88-72-160-160-160zm0 290c-71.8 0-130-58.2-130-130s58.2-130 130-130 130 58.2 130 130-58.2 130-130 130z" fill="none" stroke="#2c3e50" stroke-width="12" />
+    <path d="M256 176c-44.1 0-80 35.9-80 80 0 26.7 13.2 50.3 33.3 64.7" fill="none" stroke="#2c3e50" stroke-width="12" stroke-linecap="round" />
+    <path d="M256 176v30" fill="none" stroke="#2c3e50" stroke-width="12" stroke-linecap="round" />
+    <path d="M296.7 186.4c24.8 13.1 41.6 39.1 41.6 69.6 0 20.4-7.8 39-20.6 53" fill="none" stroke="#2c3e50" stroke-width="12" stroke-linecap="round" />
+    <path d="M214.7 186.4c-7.3 3.9-14 8.9-19.7 14.9" fill="none" stroke="#2c3e50" stroke-width="12" stroke-linecap="round" />
+  </g>
+  
+  <!-- Privacy Symbol (Eye with Shield) -->
+  <g transform="translate(300, 170) scale(0.15)">
+    <ellipse cx="256" cy="256" rx="150" ry="100" fill="none" stroke="#e74c3c" stroke-width="24" />
+    <circle cx="256" cy="256" r="50" fill="#e74c3c" />
+    <line x1="150" y1="150" x2="362" y2="362" stroke="#e74c3c" stroke-width="24" stroke-linecap="round" />
+  </g>
+</svg> 

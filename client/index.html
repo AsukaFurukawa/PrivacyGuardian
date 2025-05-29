@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhisperPrint + Privacy-Guardian</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/icon.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <img src="assets/logo.svg" alt="WhisperPrint Logo" class="floating">
+        <span>WhisperPrint + Privacy-Guardian</span>
+      </div>
+      <div id="connection-status" class="status status-disconnected">Disconnected</div>
+    </header>
+    
+    <div class="tab-container">
+      <div class="tab active" data-tab="fingerprint">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
+        Fingerprint Document
+      </div>
+      <div class="tab" data-tab="identify">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        Identify Leak
+      </div>
+      <div class="tab" data-tab="privacy">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        Privacy Check
+      </div>
+      <div class="tab" data-tab="dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        Dashboard
+      </div>
+      <div class="tab" data-tab="settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Settings
+      </div>
+    </div>
+    
+    <div class="content">
+      <!-- Fingerprint Document Tab -->
+      <div id="fingerprint-tab" class="tab-content active">
+        <div class="card glow">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            Create Fingerprinted Document
+          </h2>
+          
+          <div class="input-type-switcher">
+            <button class="switcher-btn active" data-input-type="text">Text Input</button>
+            <button class="switcher-btn" data-input-type="file">File Upload</button>
+          </div>
+          
+          <form id="fingerprint-form">
+            <div class="form-group">
+              <label for="recipient-id">Recipient ID:</label>
+              <input type="text" id="recipient-id" placeholder="e.g., john.doe@example.com" required>
+            </div>
+            
+            <div id="text-input-container">
+              <div class="form-group">
+                <label for="document-text">Document Text:</label>
+                <textarea id="document-text" placeholder="Paste or type your document content here..." required></textarea>
+              </div>
+            </div>
+            
+            <div id="file-input-container" style="display: none;">
+              <div class="upload-area" id="document-dropzone">
+                <i class="fa-solid fa-file-arrow-up upload-icon"></i>
+                <div class="upload-text">Drag & Drop Files Here</div>
+                <div class="upload-hint">or click to browse files (PDF, Word, Excel, Text files)</div>
+                <input type="file" id="document-file-input" style="display: none;" accept=".pdf,.doc,.docx,.xlsx,.xls,.txt,.rtf,.pptx,.ppt">
+              </div>
+              
+              <div id="file-preview-container" style="display: none;">
+                <!-- File previews will be inserted here -->
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <button type="submit" id="fingerprint-button">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+                Create Fingerprinted Document
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <div id="fingerprint-result" class="card result-card" style="display: none;">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Fingerprinted Document
+          </h2>
+          <div class="form-group">
+            <label>Tracking ID:</label>
+            <div id="tracking-id" class="result-info"></div>
+          </div>
+          <div class="form-group">
+            <label>Recipient UUID:</label>
+            <div id="recipient-uuid" class="result-info"></div>
+          </div>
+          <div class="form-group">
+            <label>Fingerprinted Document:</label>
+            <div id="result-actions">
+              <button id="copy-fingerprinted" class="btn-secondary">
+                <i class="fa-solid fa-copy"></i>
+                Copy to Clipboard
+              </button>
+              <button id="download-fingerprinted" class="btn-secondary">
+                <i class="fa-solid fa-download"></i>
+                Download File
+              </button>
+            </div>
+            <textarea id="fingerprinted-text" readonly></textarea>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Identify Leak Tab -->
+      <div id="identify-tab" class="tab-content">
+        <div class="card glow">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            Identify Leaked Document
+          </h2>
+          
+          <div class="input-type-switcher">
+            <button class="switcher-btn active" data-input-type="text">Text Input</button>
+            <button class="switcher-btn" data-input-type="file">File Upload</button>
+          </div>
+          
+          <form id="identify-form">
+            <div id="identify-text-container">
+              <div class="form-group">
+                <label for="leaked-text">Leaked Document Text:</label>
+                <textarea id="leaked-text" placeholder="Paste the leaked document content here..." required></textarea>
+              </div>
+            </div>
+            
+            <div id="identify-file-container" style="display: none;">
+              <div class="upload-area" id="identify-dropzone">
+                <i class="fa-solid fa-file-circle-question upload-icon"></i>
+                <div class="upload-text">Drag & Drop Suspected Leaked File</div>
+                <div class="upload-hint">or click to browse files (PDF, Word, Excel, Text files)</div>
+                <input type="file" id="identify-file-input" style="display: none;" accept=".pdf,.doc,.docx,.xlsx,.xls,.txt,.rtf,.pptx,.ppt">
+              </div>
+              
+              <div id="identify-file-preview" style="display: none;">
+                <!-- File preview will be inserted here -->
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <button type="submit" id="identify-button">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Identify Source
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <div id="identify-result" class="card result-card" style="display: none;">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Identification Result
+          </h2>
+          <div class="form-group">
+            <label>Recipient ID:</label>
+            <div id="identified-recipient" class="result-info"></div>
+          </div>
+          <div class="form-group">
+            <label>Confidence:</label>
+            <div id="confidence" class="result-info"></div>
+          </div>
+          <div class="form-group">
+            <label>Additional Information:</label>
+            <div id="recipient-metadata" class="result-info"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Privacy Check Tab -->
+      <div id="privacy-tab" class="tab-content">
+        <div class="card glow">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            Check for Sensitive Information
+          </h2>
+          
+          <div class="input-type-switcher">
+            <button class="switcher-btn active" data-input-type="text">Text Input</button>
+            <button class="switcher-btn" data-input-type="file">File Upload</button>
+          </div>
+          
+          <form id="privacy-form">
+            <div class="form-group">
+              <label for="content-type">Content Type:</label>
+              <select id="content-type">
+                <option value="text">Plain Text</option>
+                <option value="email">Email</option>
+                <option value="code">Source Code</option>
+                <option value="legal">Legal Document</option>
+                <option value="pdf">PDF Document</option>
+                <option value="word">Word Document</option>
+                <option value="excel">Excel Spreadsheet</option>
+                <option value="powerpoint">PowerPoint</option>
+              </select>
+            </div>
+            
+            <div id="privacy-text-container">
+              <div class="form-group">
+                <label for="content-text">Content:</label>
+                <textarea id="content-text" placeholder="Paste content to check for sensitive information..." required></textarea>
+              </div>
+            </div>
+            
+            <div id="privacy-file-container" style="display: none;">
+              <div class="upload-area" id="privacy-dropzone">
+                <i class="fa-solid fa-shield-halved upload-icon"></i>
+                <div class="upload-text">Drag & Drop Files for Privacy Check</div>
+                <div class="upload-hint">or click to browse files (PDF, Word, Excel, Text files)</div>
+                <input type="file" id="privacy-file-input" style="display: none;" accept=".pdf,.doc,.docx,.xlsx,.xls,.txt,.rtf,.pptx,.ppt">
+              </div>
+              
+              <div id="privacy-file-preview" style="display: none;">
+                <!-- File preview will be inserted here -->
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <button type="submit" id="privacy-button">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                Check Content
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <div id="privacy-result" class="card result-card" style="display: none;">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            Privacy Check Results
+          </h2>
+          <div class="form-group">
+            <label>Tracking ID:</label>
+            <div id="privacy-tracking-id" class="result-info"></div>
+          </div>
+          <div class="risk-meter">
+            <div class="risk-label">Risk Score:</div>
+            <div class="risk-bar-container">
+              <div id="risk-bar" class="risk-bar"></div>
+              <div id="risk-score" class="risk-score">0%</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Recommendation:</label>
+            <div id="recommendation" class="recommendation"></div>
+          </div>
+          <div class="form-group">
+            <label>Detected Sensitive Information:</label>
+            <div id="detections-list" class="detections-list"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Dashboard Tab -->
+      <div id="dashboard-tab" class="tab-content">
+        <div class="stats-container">
+          <div class="stat-card">
+            <div class="stat-value" id="total-docs">0</div>
+            <div class="stat-label">Total Documents</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="total-recipients">0</div>
+            <div class="stat-label">Recipients</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="total-detections">0</div>
+            <div class="stat-label">Privacy Checks</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="total-leaks">0</div>
+            <div class="stat-label">Identified Leaks</div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20v-6M6 20V10M18 20V4"></path>
+            </svg>
+            Recent Activity
+          </h2>
+          <div class="events-container">
+            <div id="events-list" class="events-list">
+              <div class="event-item event-placeholder">
+                <div class="event-time">--:--</div>
+                <div class="event-type event-type-fingerprint">Waiting</div>
+                <div class="event-description">Waiting for events...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Settings Tab -->
+      <div id="settings-tab" class="tab-content">
+        <div class="card">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            Settings
+          </h2>
+          <form id="settings-form">
+            <div class="form-group">
+              <label for="api-endpoint">API Endpoint:</label>
+              <input type="text" id="api-endpoint" placeholder="http://localhost:8000">
+            </div>
+            <div class="form-group">
+              <label for="api-key">API Key (if required):</label>
+              <input type="text" id="api-key" placeholder="Your API key">
+            </div>
+            <div class="form-group">
+              <label for="sensitivity-threshold">Privacy Detection Sensitivity:</label>
+              <div class="slider-container">
+                <input type="range" id="sensitivity-threshold" min="0" max="100" step="1" value="75">
+                <div class="threshold-value"><span id="threshold-display">75</span>%</div>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label>File Processing Settings:</label>
+              <div class="checkbox-container">
+                <input type="checkbox" id="preserve-metadata" checked>
+                <div class="custom-checkbox"></div>
+                <span>Preserve file metadata after fingerprinting</span>
+              </div>
+              <div class="checkbox-container">
+                <input type="checkbox" id="auto-extract-text" checked>
+                <div class="custom-checkbox"></div>
+                <span>Automatically extract text from documents</span>
+              </div>
+              <div class="checkbox-container">
+                <input type="checkbox" id="auto-check" checked>
+                <div class="custom-checkbox"></div>
+                <span>Auto-check content for sensitive information</span>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <button type="submit" id="save-settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Save Settings
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <div class="card">
+          <h2 class="card-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            About
+          </h2>
+          <p>WhisperPrint + Privacy-Guardian is a data leakage prevention and tracing system that combines document fingerprinting with sensitive information detection.</p>
+          <p>Version: 1.0.0</p>
+          <p><a href="https://github.com/AsukaFurukawa/PrivacyGuardian" target="_blank">GitHub Repository</a></p>
+        </div>
+      </div>
+    </div>
+    
+    <footer>
+      &copy; 2024 WhisperPrint + Privacy-Guardian | <a href="https://github.com/AsukaFurukawa/PrivacyGuardian" target="_blank">GitHub</a>
+    </footer>
+  </div>
+  
+  <script src="client.js"></script>
+  <script src="main.js"></script>
+</body>
+</html> 
