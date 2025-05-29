@@ -17,7 +17,8 @@ const state = {
         identify: null,
         privacy: null
     },
-    fingerprintedFile: null
+    fingerprintedFile: null,
+    DEMO_MODE: true // Demo mode is enabled by default
 };
 
 // DOM Elements
@@ -159,6 +160,11 @@ elements.inputTypeSwitchers.forEach(switcher => {
 
 // *** API Functions ***
 async function apiRequest(endpoint, method = 'GET', data = null, file = null) {
+    // In demo mode, return mock responses
+    if (state.DEMO_MODE) {
+        return getMockResponse(endpoint, method, data);
+    }
+    
     const url = `${state.apiEndpoint}${endpoint}`;
     const headers = {
         'Authorization': state.apiKey ? `Bearer ${state.apiKey}` : ''
@@ -209,12 +215,111 @@ async function apiRequest(endpoint, method = 'GET', data = null, file = null) {
     }
 }
 
+// Add this function to provide mock responses in demo mode
+function getMockResponse(endpoint, method, data) {
+    console.log(`Demo mode: mock response for ${method} ${endpoint}`);
+    
+    if (endpoint === '/stats') {
+        return {
+            fingerprinted_documents: 42,
+            total_recipients: 18,
+            content_checks: 95,
+            identified_leaks: 3
+        };
+    }
+    
+    if (endpoint === '/fingerprint' && method === 'POST') {
+        return {
+            tracking_id: `track-${Math.random().toString(36).substring(2, 10)}`,
+            recipient_uuid: `uuid-${Math.random().toString(36).substring(2, 15)}`,
+            fingerprinted_text: data.text + "\n\n[This document is fingerprinted for demonstration purposes]"
+        };
+    }
+    
+    if (endpoint === '/fingerprint/file' && method === 'POST') {
+        return {
+            tracking_id: `track-${Math.random().toString(36).substring(2, 10)}`,
+            recipient_uuid: `uuid-${Math.random().toString(36).substring(2, 15)}`,
+            fingerprinted_file: {
+                url: '#demo-file',
+                filename: 'fingerprinted_document.pdf'
+            }
+        };
+    }
+    
+    if (endpoint === '/identify' && method === 'POST') {
+        return {
+            recipient_id: 'john.doe@example.com',
+            confidence: 0.93,
+            metadata: {
+                original_timestamp: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(),
+                ip_address: '192.168.1.xxx',
+                access_count: 7
+            }
+        };
+    }
+    
+    if (endpoint === '/check' && method === 'POST') {
+        return {
+            tracking_id: `check-${Math.random().toString(36).substring(2, 10)}`,
+            risk_score: 0.78,
+            recommendation: 'review',
+            detections: [
+                { type: 'email', value: 'example@example.com', confidence: 0.99 },
+                { type: 'phone', value: '+1 (555) 123-4567', confidence: 0.95 },
+                { type: 'credit_card', value: '**** **** **** 1234', confidence: 0.90 }
+            ]
+        };
+    }
+    
+    return { status: 'demo_response' };
+}
+
 // *** WebSocket Connection ***
 function connectWebSocket() {
     if (state.activeWebSocket) {
         state.activeWebSocket.close();
     }
     
+    // Skip connection attempts in demo mode
+    if (state.DEMO_MODE) {
+        console.log('Running in demo mode, WebSocket connection disabled');
+        updateConnectionStatus('demo');
+        
+        // Add some sample events for the dashboard
+        state.eventLog = [
+            {
+                event_type: 'document_fingerprinted',
+                recipient_id: 'demo.user@example.com',
+                timestamp: new Date().toISOString()
+            },
+            {
+                event_type: 'document_identified',
+                recipient_id: 'john.doe@example.com',
+                confidence: 0.93,
+                timestamp: new Date(Date.now() - 3600000).toISOString()
+            },
+            {
+                event_type: 'content_checked',
+                has_sensitive_data: true,
+                risk_score: 0.78,
+                timestamp: new Date(Date.now() - 7200000).toISOString()
+            }
+        ];
+        updateEventsList();
+        
+        // Update dashboard stats with mock data
+        setTimeout(() => {
+            if (elements.totalDocs) elements.totalDocs.textContent = "42";
+            if (elements.totalRecipients) elements.totalRecipients.textContent = "18";
+            if (elements.totalDetections) elements.totalDetections.textContent = "95";
+            if (elements.totalLeaks) elements.totalDetections.textContent = "3";
+        }, 1000);
+        
+        return;
+    }
+    
+    // Only proceed with WebSocket connection if not in demo mode
     try {
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = state.apiEndpoint.replace(/^https?:\/\//, '');
@@ -233,13 +338,21 @@ function connectWebSocket() {
             updateConnectionStatus('disconnected');
             state.activeWebSocket = null;
             
-            // Try to reconnect after 5 seconds
-            setTimeout(connectWebSocket, 5000);
+            // Only attempt reconnection if not in demo mode
+            if (!state.DEMO_MODE) {
+                setTimeout(connectWebSocket, 5000);
+            }
         };
         
         ws.onerror = (error) => {
             console.error('WebSocket error:', error);
-            updateConnectionStatus('disconnected');
+            
+            // Switch to demo mode if connection fails
+            if (!state.DEMO_MODE) {
+                console.log('Switching to demo mode due to connection error');
+                state.DEMO_MODE = true;
+                updateConnectionStatus('demo');
+            }
         };
         
         ws.onmessage = (event) => {
@@ -263,15 +376,22 @@ function connectWebSocket() {
         };
     } catch (error) {
         console.error('Error connecting to WebSocket:', error);
-        updateConnectionStatus('disconnected');
+        // Switch to demo mode if connection fails
+        state.DEMO_MODE = true;
+        updateConnectionStatus('demo');
     }
 }
 
 function updateConnectionStatus(status) {
     state.connectionStatus = status;
     
-    elements.connectionStatus.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-    elements.connectionStatus.className = `status status-${status}`;
+    if (status === 'demo') {
+        elements.connectionStatus.textContent = 'Demo Mode';
+        elements.connectionStatus.className = 'status status-connected';
+    } else {
+        elements.connectionStatus.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        elements.connectionStatus.className = `status status-${status}`;
+    }
 }
 
 // *** Dashboard Functions ***

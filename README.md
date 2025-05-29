@@ -196,9 +196,9 @@ See the [Commercial Roadmap](commercial_roadmap.md) for the planned evolution of
 
 ## 👥 Team
 
-- [Your Name](https://github.com/yourusername) - Role
-- [Team Member 2](https://github.com/username2) - Role
-- [Team Member 3](https://github.com/username3) - Role
+- [Prachi Sinha] (https://github.com/yourusername) - Role
+- [Alekh Kumar] (https://github.com/username2) - Role
+- [Tushar Kumar] (https://github.com/username3) - Role
 
 ## 🙏 Acknowledgments
 
