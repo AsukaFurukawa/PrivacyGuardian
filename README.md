@@ -8,7 +8,7 @@ A comprehensive data leakage prevention and tracing system that combines documen
 
 ## 🚀 Hackathon Project
 
-This project was developed for the [YourHackathonName] Hackathon, focusing on privacy and security solutions. PrivacyGuardian provides a comprehensive solution for:
+This project was developed for the [HackVotex] Hackathon, focusing on privacy and security solutions. PrivacyGuardian provides a comprehensive solution for:
 
 1. **Document Fingerprinting**: Invisibly mark documents with recipient-specific fingerprints
 2. **Leak Tracing**: Identify the source of leaked documents
@@ -196,9 +196,9 @@ See the [Commercial Roadmap](commercial_roadmap.md) for the planned evolution of
 
 ## 👥 Team
 
-- [Prachi Sinha] (https://github.com/yourusername) - Role
-- [Alekh Kumar] (https://github.com/username2) - Role
-- [Tushar Kumar] (https://github.com/username3) - Role
+- [Prachi Sinha] - Team Leader
+- [Alekh Kumar]
+- [Tushar Kumar]
 
 ## 🙏 Acknowledgments
 
