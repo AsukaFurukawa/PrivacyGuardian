@@ -160,9 +160,9 @@ elements.inputTypeSwitchers.forEach(switcher => {
 
 // *** API Functions ***
 async function apiRequest(endpoint, method = 'GET', data = null, file = null) {
-    // In demo mode, return mock responses
+    // In demo mode, don't use mock responses, but rather use our actual API with dummy data backend
     if (state.DEMO_MODE) {
-        return getMockResponse(endpoint, method, data);
+        return realApiRequest(endpoint, method, data, file);
     }
     
     const url = `${state.apiEndpoint}${endpoint}`;
@@ -204,35 +204,90 @@ async function apiRequest(endpoint, method = 'GET', data = null, file = null) {
         const response = await fetch(url, options);
         
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`API Error (${response.status}): ${errorText}`);
+            throw new Error(`API Error: ${response.status} ${response.statusText}`);
         }
         
         return await response.json();
     } catch (error) {
         console.error('API Request Error:', error);
+        
+        // If production API fails, fallback to demo mode
+        if (!state.DEMO_MODE) {
+            console.log('Switching to demo mode due to API error');
+            state.DEMO_MODE = true;
+            updateConnectionStatus('demo');
+            
+            // Retry with mock response
+            return getMockResponse(endpoint, method, data);
+        }
+        
         throw error;
     }
 }
 
-// Add this function to provide mock responses in demo mode
+// New function to make real API requests to our dummy data backend
+async function realApiRequest(endpoint, method = 'GET', data = null, file = null) {
+    const url = `${state.apiEndpoint}${endpoint}`;
+    const headers = {
+        'Authorization': 'Bearer admin'  // For demo mode, use the default admin credentials
+    };
+    
+    const options = {
+        method,
+        headers,
+        mode: 'cors'
+    };
+    
+    if (file) {
+        // For demo mode, we don't support real file uploads, so use mock response
+        return getMockResponse(endpoint, method, data);
+    } else if (data && (method === 'POST' || method === 'PUT')) {
+        options.body = JSON.stringify(data);
+        headers['Content-Type'] = 'application/json';
+    }
+    
+    try {
+        console.log(`Making real API request to dummy backend: ${method} ${url}`);
+        const response = await fetch(url, options);
+        
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Real API Request Error:', error);
+        
+        // If real API fails, fall back to mock responses
+        console.log('Falling back to mock responses');
+        return getMockResponse(endpoint, method, data);
+    }
+}
+
 function getMockResponse(endpoint, method, data) {
     console.log(`Demo mode: mock response for ${method} ${endpoint}`);
     
     if (endpoint === '/stats') {
         return {
-            fingerprinted_documents: 42,
-            total_recipients: 18,
-            content_checks: 95,
-            identified_leaks: 3
+            total_documents: 245,
+            total_recipients: 28,
+            active_connections: 3,
+            uptime: "12 hours 34 minutes",
+            system_load: 0.42
         };
     }
     
     if (endpoint === '/fingerprint' && method === 'POST') {
+        const tracking_id = `track-${Math.random().toString(36).substring(2, 10)}`;
+        const recipient_uuid = `uuid-${Math.random().toString(36).substring(2, 15)}`;
+        
+        // Add a fake watermark to simulate fingerprinting
+        const fingerprinted_text = `${data.text}\n\n[This document is fingerprinted with ID: ${tracking_id.substring(0, 8)}]`;
+        
         return {
-            tracking_id: `track-${Math.random().toString(36).substring(2, 10)}`,
-            recipient_uuid: `uuid-${Math.random().toString(36).substring(2, 15)}`,
-            fingerprinted_text: data.text + "\n\n[This document is fingerprinted for demonstration purposes]"
+            fingerprinted_text: fingerprinted_text,
+            recipient_uuid: recipient_uuid,
+            tracking_id: tracking_id
         };
     }
     
@@ -248,27 +303,115 @@ function getMockResponse(endpoint, method, data) {
     }
     
     if (endpoint === '/identify' && method === 'POST') {
-        return {
-            recipient_id: 'john.doe@example.com',
-            confidence: 0.93,
-            metadata: {
-                original_timestamp: new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString(),
-                ip_address: '192.168.1.xxx',
-                access_count: 7
+        // Check if the text contains a fingerprint marker
+        if (data.leaked_text && data.leaked_text.includes("[This document is fingerprinted with ID:")) {
+            const metadata = {
+                department: ["Engineering", "Marketing", "Finance", "Legal", "HR"][Math.floor(Math.random() * 5)],
+                access_level: ["Public", "Internal", "Confidential", "Restricted"][Math.floor(Math.random() * 4)],
+                original_timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 3600 * 1000).toISOString(),
+                access_count: Math.floor(Math.random() * 20) + 1
+            };
+            
+            return {
+                recipient_id: ["john.doe@example.com", "alice.smith@example.com", "bob.jones@example.com", 
+                              "sarah.wilson@example.com", "michael.brown@example.com"][Math.floor(Math.random() * 5)],
+                confidence: Math.random() * 0.2 + 0.8, // 0.8 - 1.0 range
+                metadata: metadata
+            };
+        } else {
+            // Random chance of finding a match even without explicit fingerprint
+            if (Math.random() < 0.7) {
+                return {
+                    recipient_id: ["john.doe@example.com", "alice.smith@example.com", "bob.jones@example.com", 
+                                  "sarah.wilson@example.com", "michael.brown@example.com"][Math.floor(Math.random() * 5)],
+                    confidence: Math.random() * 0.35 + 0.5, // 0.5 - 0.85 range
+                    metadata: {
+                        department: ["Engineering", "Marketing", "Finance", "Legal", "HR"][Math.floor(Math.random() * 5)],
+                        access_level: ["Public", "Internal", "Confidential", "Restricted"][Math.floor(Math.random() * 4)]
+                    }
+                };
+            } else {
+                return {
+                    recipient_id: null,
+                    confidence: Math.random() * 0.3 + 0.1, // 0.1 - 0.4 range
+                    metadata: null
+                };
             }
-        };
+        }
     }
     
     if (endpoint === '/check' && method === 'POST') {
+        // Define sensitive data types
+        const sensitiveDataTypes = [
+            "credit_card", "ssn", "phone_number", "email_address", "password",
+            "api_key", "address", "bank_account", "driver_license", "passport_number"
+        ];
+        
+        // Randomly determine if sensitive data is present
+        const hasSensitiveData = Math.random() < 0.8;
+        
+        // Generate detections
+        const detections = [];
+        if (hasSensitiveData) {
+            const numDetections = Math.floor(Math.random() * 4) + 1;
+            const selectedTypes = [];
+            
+            // Select random types without duplicates
+            while (selectedTypes.length < numDetections && selectedTypes.length < sensitiveDataTypes.length) {
+                const type = sensitiveDataTypes[Math.floor(Math.random() * sensitiveDataTypes.length)];
+                if (!selectedTypes.includes(type)) {
+                    selectedTypes.push(type);
+                }
+            }
+            
+            // Create detections
+            for (const type of selectedTypes) {
+                detections.push({
+                    type: type,
+                    confidence: Math.random() * 0.29 + 0.7, // 0.7 - 0.99 range
+                    location: {
+                        start: Math.floor(Math.random() * 100),
+                        end: Math.floor(Math.random() * 100) + 100
+                    },
+                    value: type === "credit_card" ? "**** **** **** 1234" : 
+                           type === "ssn" ? "***-**-6789" :
+                           type === "phone_number" ? "(***) ***-4567" :
+                           type === "email_address" ? "user@example.com" :
+                           "********" // masked value
+                });
+            }
+        }
+        
+        // Calculate risk score based on number and types of detections
+        let riskScore = 0;
+        if (detections.length > 0) {
+            const baseScore = 0.5;
+            for (const detection of detections) {
+                // Higher confidence and certain types increase risk score more
+                const typeMultiplier = ["credit_card", "ssn", "password", "api_key"].includes(detection.type) ? 1.5 : 1.0;
+                riskScore += (detection.confidence * typeMultiplier) / detections.length;
+            }
+            
+            // Ensure score is between 0 and 1
+            riskScore = Math.min(0.95, Math.max(0.1, riskScore));
+        }
+        
+        // Generate recommendation based on risk score
+        let recommendation;
+        if (riskScore > 0.8) {
+            recommendation = "High risk! Do not share this content. Consider redacting sensitive information.";
+        } else if (riskScore > 0.5) {
+            recommendation = "Medium risk. Review sensitive data before sharing.";
+        } else {
+            recommendation = "Low risk. Content appears safe to share.";
+        }
+        
         return {
-            tracking_id: `check-${Math.random().toString(36).substring(2, 10)}`,
-            risk_score: 0.78,
-            recommendation: 'review',
-            detections: [
-                { type: 'email', value: 'example@example.com', confidence: 0.99 },
-                { type: 'phone', value: '+1 (555) 123-4567', confidence: 0.95 },
-                { type: 'credit_card', value: '**** **** **** 1234', confidence: 0.90 }
-            ]
+            has_sensitive_data: hasSensitiveData,
+            risk_score: riskScore,
+            recommendation: recommendation,
+            detections: detections,
+            tracking_id: `check-${Math.random().toString(36).substring(2, 10)}`
         };
     }
     
@@ -281,45 +424,67 @@ function connectWebSocket() {
         state.activeWebSocket.close();
     }
     
-    // Skip connection attempts in demo mode
+    // In demo mode, use the real WebSocket connection to our dummy data backend
     if (state.DEMO_MODE) {
-        console.log('Running in demo mode, WebSocket connection disabled');
-        updateConnectionStatus('demo');
-        
-        // Add some sample events for the dashboard
-        state.eventLog = [
-            {
-                event_type: 'document_fingerprinted',
-                recipient_id: 'demo.user@example.com',
-                timestamp: new Date().toISOString()
-            },
-            {
-                event_type: 'document_identified',
-                recipient_id: 'john.doe@example.com',
-                confidence: 0.93,
-                timestamp: new Date(Date.now() - 3600000).toISOString()
-            },
-            {
-                event_type: 'content_checked',
-                has_sensitive_data: true,
-                risk_score: 0.78,
-                timestamp: new Date(Date.now() - 7200000).toISOString()
-            }
-        ];
-        updateEventsList();
-        
-        // Update dashboard stats with mock data
-        setTimeout(() => {
-            if (elements.totalDocs) elements.totalDocs.textContent = "42";
-            if (elements.totalRecipients) elements.totalRecipients.textContent = "18";
-            if (elements.totalDetections) elements.totalDetections.textContent = "95";
-            if (elements.totalLeaks) elements.totalDetections.textContent = "3";
-        }, 1000);
+        try {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = state.apiEndpoint.replace(/^https?:\/\//, '');
+            const wsEndpoint = `${wsProtocol}//${wsUrl}/ws/dashboard`;
+            
+            console.log(`Connecting to WebSocket at ${wsEndpoint}`);
+            const ws = new WebSocket(wsEndpoint);
+            
+            ws.onopen = () => {
+                console.log('WebSocket connected to dummy data backend');
+                updateConnectionStatus('connected');
+                state.activeWebSocket = ws;
+            };
+            
+            ws.onclose = () => {
+                console.log('WebSocket disconnected');
+                updateConnectionStatus('disconnected');
+                state.activeWebSocket = null;
+                
+                // Attempt reconnection
+                setTimeout(connectWebSocket, 5000);
+            };
+            
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus('disconnected');
+                
+                // Fall back to mock events data
+                mockDashboardEvents();
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    console.log('WebSocket message received:', data);
+                    
+                    // Add the event to the log
+                    state.eventLog.unshift(data);
+                    if (state.eventLog.length > 50) {
+                        state.eventLog = state.eventLog.slice(0, 50);
+                    }
+                    
+                    updateEventsList();
+                    
+                    // Refresh dashboard stats
+                    fetchStats();
+                } catch (error) {
+                    console.error('Error processing WebSocket message:', error);
+                }
+            };
+        } catch (error) {
+            console.error('Error connecting to WebSocket:', error);
+            mockDashboardEvents();
+        }
         
         return;
     }
     
-    // Only proceed with WebSocket connection if not in demo mode
+    // Only proceed with production WebSocket connection if not in demo mode
     try {
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = state.apiEndpoint.replace(/^https?:\/\//, '');
@@ -400,10 +565,10 @@ async function fetchStats() {
         const stats = await apiRequest('/stats');
         
         // Update dashboard stats with animation
-        animateCounter(elements.totalDocs, stats.fingerprinted_documents || 0);
+        animateCounter(elements.totalDocs, stats.total_documents || 0);
         animateCounter(elements.totalRecipients, stats.total_recipients || 0);
-        animateCounter(elements.totalDetections, stats.content_checks || 0);
-        animateCounter(elements.totalLeaks, stats.identified_leaks || 0);
+        animateCounter(elements.totalDetections, stats.active_connections || 0);
+        animateCounter(elements.totalLeaks, stats.system_load || 0);
     } catch (error) {
         console.error('Error fetching stats:', error);
     }
@@ -432,78 +597,149 @@ function animateCounter(element, targetValue) {
 }
 
 function updateEventsList() {
-    // Clear existing events except for samples (if no real events)
-    if (state.eventLog.length > 0) {
-        elements.eventsList.innerHTML = '';
+    if (!elements.eventsList) return;
+    
+    elements.eventsList.innerHTML = '';
+    
+    if (state.eventLog.length === 0) {
+        elements.eventsList.innerHTML = '<li class="no-events">No events recorded yet</li>';
+        return;
     }
     
-    // Add events to list
-    state.eventLog.slice(0, 20).forEach(event => {
-        const eventItem = document.createElement('div');
-        eventItem.className = 'event-item';
+    // Limit to last 20 events
+    const events = state.eventLog.slice(0, 20);
+    
+    events.forEach(event => {
+        const li = document.createElement('li');
+        li.className = `event ${getEventTypeClass(event.event_type)}`;
         
-        const timestamp = new Date(event.timestamp).toLocaleTimeString();
-        const eventTime = document.createElement('span');
-        eventTime.className = 'event-time';
-        eventTime.textContent = timestamp;
+        // Format timestamp
+        const timestamp = new Date(event.timestamp);
+        const timeStr = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateStr = timestamp.toLocaleDateString([], { month: 'short', day: 'numeric' });
         
-        const eventType = document.createElement('span');
-        eventType.className = `event-type event-type-${getEventTypeClass(event.event_type)}`;
-        eventType.textContent = formatEventType(event.event_type);
+        // Create event content
+        const eventIcon = document.createElement('div');
+        eventIcon.className = 'event-icon';
+        eventIcon.innerHTML = getEventIcon(event.event_type);
         
-        const eventText = document.createElement('span');
-        eventText.textContent = formatEventDescription(event);
+        const eventContent = document.createElement('div');
+        eventContent.className = 'event-content';
         
-        eventItem.appendChild(eventTime);
-        eventItem.appendChild(eventType);
-        eventItem.appendChild(eventText);
+        const eventHeader = document.createElement('div');
+        eventHeader.className = 'event-header';
+        eventHeader.innerHTML = `
+            <span class="event-type">${formatEventType(event.event_type)}</span>
+            <span class="event-time">${timeStr} · ${dateStr}</span>
+        `;
         
-        elements.eventsList.appendChild(eventItem);
+        const eventDescription = document.createElement('div');
+        eventDescription.className = 'event-description';
+        eventDescription.innerHTML = formatEventDescription(event);
+        
+        // Assemble event
+        eventContent.appendChild(eventHeader);
+        eventContent.appendChild(eventDescription);
+        
+        li.appendChild(eventIcon);
+        li.appendChild(eventContent);
+        
+        elements.eventsList.appendChild(li);
     });
 }
 
 function getEventTypeClass(eventType) {
     switch (eventType) {
         case 'document_fingerprinted':
-            return 'fingerprint';
+            return 'event-create';
+        case 'leak_identified':
         case 'document_identified':
-            return 'identified';
+            return 'event-alert';
+        case 'sensitive_data_detected':
         case 'content_checked':
-            return 'checked';
+            return 'event-warning';
         case 'feedback_recorded':
-            return 'feedback';
+            return 'event-info';
         default:
-            return 'other';
+            return 'event-default';
     }
 }
 
 function formatEventType(eventType) {
     switch (eventType) {
         case 'document_fingerprinted':
-            return 'Fingerprint';
+            return 'Document Fingerprinted';
+        case 'leak_identified':
         case 'document_identified':
-            return 'Identified';
+            return 'Leak Identified';
+        case 'sensitive_data_detected':
         case 'content_checked':
-            return 'Privacy Check';
+            return 'Sensitive Data Detected';
         case 'feedback_recorded':
-            return 'Feedback';
+            return 'Feedback Recorded';
+        case 'new_recipient_added':
+            return 'New Recipient Added';
         default:
-            return eventType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+            return eventType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+}
+
+function getEventIcon(eventType) {
+    switch (eventType) {
+        case 'document_fingerprinted':
+            return '<i class="fa-solid fa-fingerprint"></i>';
+        case 'leak_identified':
+        case 'document_identified':
+            return '<i class="fa-solid fa-triangle-exclamation"></i>';
+        case 'sensitive_data_detected':
+        case 'content_checked':
+            return '<i class="fa-solid fa-shield-halved"></i>';
+        case 'feedback_recorded':
+            return '<i class="fa-solid fa-comment"></i>';
+        case 'new_recipient_added':
+            return '<i class="fa-solid fa-user-plus"></i>';
+        default:
+            return '<i class="fa-solid fa-circle-info"></i>';
     }
 }
 
 function formatEventDescription(event) {
+    const eventData = event.event_data || {}; // Handle different event formats
+    
     switch (event.event_type) {
         case 'document_fingerprinted':
-            return ` Document fingerprinted for recipient ${event.recipient_id}`;
+            return `Document fingerprinted for <strong>${eventData.recipient_id || 'unknown recipient'}</strong>`;
+            
+        case 'leak_identified':
         case 'document_identified':
-            return ` Leaked document identified: ${event.recipient_id || 'Unknown'} (${Math.round((event.confidence || 0) * 100)}% confidence)`;
+            if (eventData.recipient_id) {
+                return `Leaked document identified. Recipient: <strong>${eventData.recipient_id}</strong> (${Math.round(eventData.confidence * 100)}% confidence)`;
+            } else {
+                return `Leaked document analyzed. No recipient identified.`;
+            }
+            
+        case 'sensitive_data_detected':
         case 'content_checked':
-            return ` Content check: ${event.has_sensitive_data ? 'Sensitive data detected' : 'No sensitive data'} (Risk: ${Math.round((event.risk_score || 0) * 100)}%)`;
+            if (eventData.detections && eventData.detections.length > 0) {
+                const types = Array.isArray(eventData.detections) ? 
+                              eventData.detections.join(', ') : 
+                              typeof eventData.detections === 'object' ? 
+                              Object.keys(eventData.detections).join(', ') : 
+                              'unknown';
+                              
+                return `Sensitive data detected: <strong>${types}</strong>. Risk score: ${Math.round(eventData.risk_score * 100)}%`;
+            } else {
+                return `Content analyzed. Risk score: ${Math.round(eventData.risk_score * 100)}%`;
+            }
+            
         case 'feedback_recorded':
-            return ` Feedback on detection: ${event.was_correct ? 'Correct' : 'Incorrect'}`;
+            return `User feedback: ${eventData.was_correct ? 'Correct detection' : 'False positive'}. Action: ${eventData.action || 'unknown'}`;
+            
+        case 'new_recipient_added':
+            return `New recipient added: <strong>${eventData.recipient_id || 'unknown'}</strong>`;
+            
         default:
-            return ` ${event.event_type}`;
+            return `${event.event_type} event occurred`;
     }
 }
 
@@ -914,4 +1150,65 @@ function initializeApp() {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', initializeApp); 
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+// Function to set up mock dashboard events when WebSocket connection fails
+function mockDashboardEvents() {
+    console.log('Using mock dashboard events');
+    updateConnectionStatus('demo');
+    
+    // Add some sample events for the dashboard
+    state.eventLog = [
+        {
+            event_type: "document_fingerprinted",
+            event_data: {
+                recipient_id: "john.doe@example.com",
+                tracking_id: "track-" + Math.random().toString(36).substring(2, 10),
+                document_length: 2048
+            },
+            timestamp: new Date().toISOString()
+        },
+        {
+            event_type: "leak_identified",
+            event_data: {
+                recipient_id: "alice.smith@example.com",
+                confidence: 0.93,
+                document_snippet: "...confidential financial projections for Q3..."
+            },
+            timestamp: new Date(Date.now() - 3600000).toISOString()
+        },
+        {
+            event_type: "sensitive_data_detected",
+            event_data: {
+                risk_score: 0.85,
+                detections: ["credit_card", "ssn"],
+                content_type: "clipboard"
+            },
+            timestamp: new Date(Date.now() - 7200000).toISOString()
+        },
+        {
+            event_type: "feedback_recorded",
+            event_data: {
+                detection_id: "detection-" + Math.random().toString(36).substring(2, 10),
+                was_correct: true,
+                action: "redact"
+            },
+            timestamp: new Date(Date.now() - 10800000).toISOString()
+        },
+        {
+            event_type: "document_fingerprinted",
+            event_data: {
+                recipient_id: "bob.jones@example.com",
+                tracking_id: "track-" + Math.random().toString(36).substring(2, 10),
+                document_length: 4096
+            },
+            timestamp: new Date(Date.now() - 14400000).toISOString()
+        }
+    ];
+    updateEventsList();
+    
+    // Update dashboard stats with mock data
+    setTimeout(() => {
+        fetchStats();
+    }, 1000);
+} 
